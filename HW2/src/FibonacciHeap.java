@@ -14,6 +14,8 @@ public class FibonacciHeap {
     private static int links;
     private static int cuts;
 
+    public static final int MAX_BUCKETS = 42;
+
     public FibonacciHeap() {
         this.size = 0;
         this.min = null;
@@ -87,19 +89,20 @@ public class FibonacciHeap {
     {
         FibonacciHeap heap1 = this;
 
-        if (heap1.empty()) {
+        if (heap2.empty()) {
+            System.out.println("Other heap is empty");
+        } else if (heap1.empty()) {
             heap1.size = heap2.size;
             heap1.min = heap2.min;
-            heap1.roots = heap2.roots;
         } else {
             heap1.size += heap2.size;
             heap1.min = heap1.min.key < heap2.min.key ? heap1.min : heap2.min;
 
-//            heap1.roots.getLast().next = heap2.roots.getFirst();
-//            heap2.roots.getLast().next = heap1.roots.getFirst();
-//            heap1.roots.getFirst().previous = heap2.roots.getLast();
-            heap1.roots.addAll(heap2.roots);
-            updateListLInks(roots);
+            heap1.min.next.previous = heap2.min.previous;
+            heap2.min.previous.next = heap1.min.next;
+
+            heap1.min.next = heap2.min;
+            heap2.min.previous = heap1.min;
         }
     }
 
@@ -122,12 +125,11 @@ public class FibonacciHeap {
     */
     public int[] countersRep()
     {
-	    int[] arr = new int[42];
-	    arr[min.rank]++;
-        HeapNode node = min.next;
-        while (node != min) {
-            arr[node.rank]++;
-            node = node.next;
+	    int[] arr = new int[MAX_BUCKETS];
+	    HeapNode[] roots = getRootsArray();
+
+	    for (HeapNode root : roots) {
+	        arr[root.rank]++;
         }
 
         return arr; //	 to be replaced by student code
@@ -179,13 +181,9 @@ public class FibonacciHeap {
     */
     public int potential() 
     {
-        int numRoots = 0;
-        for (int numTrees : countersRep()) {
-            if (numTrees > 0) {
-                numRoots++;
-            }
-        }
-    	return numRoots + 2 * marked;
+        HeapNode[] roots = getRootsArray();
+
+    	return roots.length + 2 * marked;
     }
 
    /**
@@ -219,15 +217,8 @@ public class FibonacciHeap {
     }
 
     public void link(HeapNode node1, HeapNode node2) {
-        HeapNode parent;
-        HeapNode child;
-        if (node1.key < node2.key) {
-            parent = node1;
-            child = node2;
-        } else {
-            parent = node2;
-            child = node1;
-        }
+        HeapNode parent = parentAndChild(node1, node2)[0];
+        HeapNode child = parentAndChild(node1, node2)[1];
 
         child.previous.next = child.next;
         child.next.previous = child.previous;
@@ -249,15 +240,8 @@ public class FibonacciHeap {
     }
 
     public void cut(HeapNode node1, HeapNode node2) {
-        HeapNode parent;
-        HeapNode child;
-        if (node1.key < node2.key) {
-            parent = node1;
-            child = node2;
-        } else {
-            parent = node2;
-            child = node1;
-        }
+        HeapNode parent = parentAndChild(node1, node2)[0];
+        HeapNode child = parentAndChild(node1, node2)[1];
 
         child.previous.next = child.previous;
         child.next.previous = child.next;
@@ -292,12 +276,87 @@ public class FibonacciHeap {
     }
 
     public void consolidate() {
+        HeapNode[] buckets = new HeapNode[MAX_BUCKETS];
+        HeapNode[] roots = getRootsArray();
+
+        for (HeapNode root : roots) {
+            HeapNode node1 = root;
+            int rank = node1.rank;
+            while (buckets[rank] != null) {
+                HeapNode node2 = buckets[rank];
+                HeapNode parent = parentAndChild(HeapNode node1, HeapNode node2)[0];
+                HeapNode child = parentAndChild(HeapNode node1, HeapNode node2)[1];
+
+                link(parent, child);
+                buckets[rank] = null;
+                rank++;
+            }
+
+            buckets[rank] = node1
+        }
+
+        min = null;
+
+        for (HeapNode node : buckets) {
+            if (node != null) {
+                if (min != null) {
+                    node.previous.next = node.next;
+                    node.next.previous = node.previous;
+
+                    node.previous = min;
+                    node.next = min.next;
+                    min.next = node;
+                    node.next.previous = node;
+
+                    min = node.key < min.key ? node : min;
+                } else {
+                    min = node;
+                }
+            }
+        }
 
     }
 
     public void markNode(HeapNode node, boolean mark) {
         node.isMarked = mark;
         marked = mark ? marked + 1 : marked - 1;
+    }
+
+    public HeapNode[] parentAndChild(HeapNode node1, HeapNode node2) {
+        HeapNode[] result = HeapNode[2];
+        HeapNode parent;
+        HeapNode child;
+        if (node1.key < node2.key) {
+            parent = node1;
+            child = node2;
+        } else {
+            parent = node2;
+            child = node1;
+        }
+
+        result[0] = parent;
+        result [1] = child;
+
+        return result;
+    }
+
+    public HeapNode[] getRootsArray() {
+        ArrayList<HeapNode> roots = new ArrayList<>();
+        HeapNode node = min;
+
+        if(node != null) {
+            roots.add(node);
+            node = node.next;
+
+            while (node != min) {
+                roots.add(node);
+                node = node.next;
+            }
+        }
+
+        HeapNode[] result = roots.toArray(new HeapNode[roots.size()]);
+
+        return result;
     }
 
     
