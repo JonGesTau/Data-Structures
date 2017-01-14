@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * FibonacciHeap
@@ -9,7 +10,6 @@ import java.util.LinkedList;
 public class FibonacciHeap {
     private int size;
     private HeapNode min;
-    private LinkedList<HeapNode> roots;
     private int marked;
     private static int links;
     private static int cuts;
@@ -17,7 +17,6 @@ public class FibonacciHeap {
     public FibonacciHeap() {
         this.size = 0;
         this.min = null;
-        this.roots = new LinkedList<>();
         this.marked = 0;
     }
 
@@ -49,7 +48,6 @@ public class FibonacciHeap {
         FibonacciHeap heap = new FibonacciHeap();
         heap.size = 1;
         heap.min = node;
-        heap.roots.add(node);
 
         this.meld(heap);
 
@@ -97,10 +95,11 @@ public class FibonacciHeap {
             heap1.size += heap2.size;
             heap1.min = heap1.min.key < heap2.min.key ? heap1.min : heap2.min;
 
-            heap1.roots.getLast().next = heap2.roots.getFirst();
-            heap2.roots.getLast().next = heap1.roots.getFirst();
-            heap1.roots.getFirst().previous = heap2.roots.getLast();
+//            heap1.roots.getLast().next = heap2.roots.getFirst();
+//            heap2.roots.getLast().next = heap1.roots.getFirst();
+//            heap1.roots.getFirst().previous = heap2.roots.getLast();
             heap1.roots.addAll(heap2.roots);
+            updateListLInks(roots);
         }
     }
 
@@ -124,8 +123,11 @@ public class FibonacciHeap {
     public int[] countersRep()
     {
 	    int[] arr = new int[42];
-	    for (HeapNode root : roots) {
-	        arr[root.rank]++;
+	    arr[min.rank]++;
+        HeapNode node = min.next;
+        while (node != min) {
+            arr[node.rank]++;
+            node = node.next;
         }
 
         return arr; //	 to be replaced by student code
@@ -176,8 +178,14 @@ public class FibonacciHeap {
     * The potential equals to the number of trees in the heap plus twice the number of marked nodes in the heap. 
     */
     public int potential() 
-    {    
-    	return roots.size() + 2 * marked;
+    {
+        int numRoots = 0;
+        for (int numTrees : countersRep()) {
+            if (numTrees > 0) {
+                numRoots++;
+            }
+        }
+    	return numRoots + 2 * marked;
     }
 
    /**
@@ -190,7 +198,7 @@ public class FibonacciHeap {
     */
     public static int totalLinks()
     {    
-    	return 0; // should be replaced by student code
+    	return links;
     }
 
    /**
@@ -201,15 +209,97 @@ public class FibonacciHeap {
     */
     public static int totalCuts()
     {    
-    	return 0; // should be replaced by student code
+    	return cuts;
     }
 
     public void clear() {
         size = 0;
         min = null;
-        roots.clear();
         marked = 0;
     }
+
+    public void link(HeapNode node1, HeapNode node2) {
+        HeapNode parent;
+        HeapNode child;
+        if (node1.key < node2.key) {
+            parent = node1;
+            child = node2;
+        } else {
+            parent = node2;
+            child = node1;
+        }
+
+        child.previous.next = child.next;
+        child.next.previous = child.previous;
+
+        if (parent.child == null) {
+            parent.child = child;
+            child.next = child.previous = child;
+        } else {
+            child.previous = parent.child;
+            child.next = parent.child.next;
+
+            parent.child.next = child.next.next = child;
+        }
+
+        parent.rank++;
+        markNode(child, false);
+
+        links++;
+    }
+
+    public void cut(HeapNode node1, HeapNode node2) {
+        HeapNode parent;
+        HeapNode child;
+        if (node1.key < node2.key) {
+            parent = node1;
+            child = node2;
+        } else {
+            parent = node2;
+            child = node1;
+        }
+
+        child.previous.next = child.previous;
+        child.next.previous = child.next;
+        parent.rank--;
+
+        if (parent.rank == 0) {
+            parent.child = null;
+        } else if (parent.child == child) {
+            parent.child = child.next;
+        }
+
+        child.previous = min.previous;
+        child.next = min;
+        min.previous = child.previous.next = child;
+
+        child.parent = null;
+        markNode(child, false);
+
+        cuts++;
+    }
+
+    public void cascadingCut(HeapNode node) {
+        HeapNode parent = node.parent;
+        if (parent != null) {
+            if (!node.isMarked) {
+                markNode(node, true);
+            } else {
+                cut(parent, node);
+                cascadingCut(parent);
+            }
+        }
+    }
+
+    public void consolidate() {
+
+    }
+
+    public void markNode(HeapNode node, boolean mark) {
+        node.isMarked = mark;
+        marked = mark ? marked + 1 : marked - 1;
+    }
+
     
    /**
     * public class HeapNode
@@ -224,10 +314,10 @@ public class FibonacciHeap {
         int key;
         int rank;
         boolean isMarked;
-        HeapNode child;
         HeapNode next;
         HeapNode previous;
         HeapNode parent;
+        HeapNode child;
 
         public HeapNode(int key) {
             this.key = key;
