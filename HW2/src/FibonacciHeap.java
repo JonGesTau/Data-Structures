@@ -9,6 +9,7 @@ public class FibonacciHeap {
     private int size;
     private HeapNode min;
     private int marked;
+
     private static int links;
     private static int cuts;
 
@@ -191,9 +192,9 @@ public class FibonacciHeap {
     * Deletes the node x from the heap. 
     *
     */
-    public void delete(HeapNode x) 
-    {    
-    	return; // should be replaced by student code
+    public void delete(HeapNode x) {
+    	decreaseKey(x, -1);
+    	deleteMin();
     }
 
    /**
@@ -202,9 +203,25 @@ public class FibonacciHeap {
     * The function decreases the key of the node x by delta. The structure of the heap should be updated
     * to reflect this chage (for example, the cascading cuts procedure should be applied if needed).
     */
-    public void decreaseKey(HeapNode x, int delta)
-    {    
-    	return; // should be replaced by student code
+    public void decreaseKey(HeapNode x, int delta) {
+    	HeapNode node = x;
+    	int newKey = delta == -1 ? -1 : node.key - delta;
+
+    	if (delta != -1 && newKey < 0) {
+    	    throw new IllegalArgumentException("Delta must be equal or smaller than the current key");
+        }
+
+        node.key = newKey;
+    	HeapNode parent = node.parent;
+
+    	if (parent != null && newKey < parent.key) {
+    	    cut(parent, node);
+    	    cascadingCut(parent);
+        }
+
+        if (newKey < min.key) {
+    	    min = node;
+        }
     }
 
    /**
@@ -266,6 +283,7 @@ public class FibonacciHeap {
             child.next = parent.child.next;
 
             parent.child.next = child.next.next = child;
+            child.parent = parent;
         }
 
         parent.rank++;
