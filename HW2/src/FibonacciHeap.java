@@ -71,23 +71,32 @@ public class FibonacciHeap {
      	            child.parent = null;
                 }
 
-                children[0].previous = originalMin.previous;
-     	        children[children.length - 1].next = originalMin.next;
-                originalMin.previous.next = children[0];
-                originalMin.next.previous = children[children.length - 1];
+                if (originalMin.next != originalMin) {
+                    children[0].previous = originalMin.previous;
+                    children[children.length - 1].next = originalMin.next;
+                    originalMin.previous.next = children[0];
+                    originalMin.next.previous = children[children.length - 1];
+                } else {
+                    children[0].previous = children[children.length - 1];
+                    children[children.length - 1].next = children[0];
+                }
+
+                min = originalMin.child;
             } else {
                 originalMin.previous.next = originalMin.next;
                 originalMin.next.previous = originalMin.previous;
+
+                if (originalMin == originalMin.next) {
+                    min = null;
+                } else {
+                    min = originalMin.next;
+                }
             }
 
-     	    if (originalMin == originalMin.next) {
-     	        min = null;
-            } else {
-     	        min = originalMin.next;
-     	        min = findMin();
-     	        consolidate();
+            if (min != null) {
+                min = findMin();
+                consolidate();
             }
-
             size--;
         }
      	
