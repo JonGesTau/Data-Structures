@@ -275,9 +275,9 @@ public class FibonacciHeap {
         marked = 0;
     }
 
-    public void link(HeapNode node1, HeapNode node2) {
-        HeapNode parent = parentAndChild(node1, node2)[0];
-        HeapNode child = parentAndChild(node1, node2)[1];
+    public void link(HeapNode parent, HeapNode child) {
+//        HeapNode parent = parentAndChild(node1, node2)[0];
+//        HeapNode child = parentAndChild(node1, node2)[1];
 
         child.previous.next = child.next;
         child.next.previous = child.previous;
@@ -291,7 +291,8 @@ public class FibonacciHeap {
             child.next.previous = child;
             child.previous.next = child;
 
-            parent.child.next = child;
+//            parent.child.next = child;
+
             child.parent = parent;
         }
 
@@ -414,7 +415,7 @@ public class FibonacciHeap {
         ArrayList<HeapNode> siblings = new ArrayList<>();
         HeapNode firstNode = node;
 
-        if(node != null) {
+        if (node != null) {
             siblings.add(node);
             node = node.next;
 
