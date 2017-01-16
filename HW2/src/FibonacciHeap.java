@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * FibonacciHeap
@@ -64,7 +62,35 @@ public class FibonacciHeap {
     */
     public void deleteMin()
     {
-     	return; // should be replaced by student code
+     	if (min != null) {
+     	    HeapNode originalMin = min;
+     	    if (originalMin.child != null) {
+                HeapNode[] children = getSiblingsArray(originalMin.child);
+     	        for (HeapNode child : children) {
+     	            child.parent = null;
+                }
+
+                HeapNode minPrevious = min.previous;
+     	        HeapNode originallMinChildPrevious = originalMin.child.previous;
+     	        min.previous = originallMinChildPrevious;
+     	        originallMinChildPrevious.next = min;
+     	        originalMin.child.previous = minPrevious;
+     	        minPrevious.next = originalMin.child;
+            }
+
+            originalMin.previous.next = originalMin.next;
+     	    originalMin.next.previous = originalMin.previous;
+
+     	    if (originalMin == originalMin.next) {
+     	        min = null;
+            } else {
+     	        min = originalMin.next;
+     	        min = findMin();
+     	        consolidate();
+            }
+
+            size--;
+        }
      	
     }
 
@@ -76,7 +102,16 @@ public class FibonacciHeap {
     */
     public HeapNode findMin()
     {
-    	return min;
+    	HeapNode[] roots = getRootsArray();
+    	HeapNode newMin = roots[0];
+
+    	for (HeapNode root : roots) {
+    	    if (root.key < newMin.key) {
+    	        newMin = root;
+            }
+        }
+
+        return newMin;
     }
     
    /**
@@ -95,14 +130,14 @@ public class FibonacciHeap {
             heap1.size = heap2.size;
             heap1.min = heap2.min;
         } else {
-            heap1.size += heap2.size;
-            heap1.min = heap1.min.key < heap2.min.key ? heap1.min : heap2.min;
-
             heap1.min.next.previous = heap2.min.previous;
             heap2.min.previous.next = heap1.min.next;
 
             heap1.min.next = heap2.min;
             heap2.min.previous = heap1.min;
+
+            heap1.size += heap2.size;
+            heap1.min = heap1.min.key < heap2.min.key ? heap1.min : heap2.min;
         }
     }
 
@@ -114,7 +149,7 @@ public class FibonacciHeap {
     */
     public int size()
     {
-    	return size; // should be replaced by student code
+    	return size;
     }
     	
     /**
@@ -284,21 +319,23 @@ public class FibonacciHeap {
             int rank = node1.rank;
             while (buckets[rank] != null) {
                 HeapNode node2 = buckets[rank];
-                HeapNode parent = parentAndChild(HeapNode node1, HeapNode node2)[0];
-                HeapNode child = parentAndChild(HeapNode node1, HeapNode node2)[1];
+                HeapNode parent = parentAndChild(node1, node2)[0];
+                HeapNode child = parentAndChild(node1, node2)[1];
+
 
                 link(parent, child);
                 buckets[rank] = null;
                 rank++;
+                node1 = parent;
             }
 
-            buckets[rank] = node1
+            buckets[rank] = node1;
         }
 
         min = null;
 
         for (HeapNode node : buckets) {
-            if (node != null) {
+              if (node != null) {
                 if (min != null) {
                     node.previous.next = node.next;
                     node.next.previous = node.previous;
@@ -314,16 +351,18 @@ public class FibonacciHeap {
                 }
             }
         }
-
     }
 
     public void markNode(HeapNode node, boolean mark) {
         node.isMarked = mark;
         marked = mark ? marked + 1 : marked - 1;
+        if (marked < 0) {
+            marked = 0;
+        }
     }
 
     public HeapNode[] parentAndChild(HeapNode node1, HeapNode node2) {
-        HeapNode[] result = HeapNode[2];
+        HeapNode[] result = new HeapNode[2];
         HeapNode parent;
         HeapNode child;
         if (node1.key < node2.key) {
@@ -335,30 +374,33 @@ public class FibonacciHeap {
         }
 
         result[0] = parent;
-        result [1] = child;
+        result[1] = child;
 
         return result;
     }
 
     public HeapNode[] getRootsArray() {
-        ArrayList<HeapNode> roots = new ArrayList<>();
-        HeapNode node = min;
+        return getSiblingsArray(min);
+    }
+
+    public HeapNode[] getSiblingsArray(HeapNode node) {
+        ArrayList<HeapNode> siblings = new ArrayList<>();
+        HeapNode firstNode = node;
 
         if(node != null) {
-            roots.add(node);
+            siblings.add(node);
             node = node.next;
 
-            while (node != min) {
-                roots.add(node);
+            while (node != firstNode) {
+                siblings.add(node);
                 node = node.next;
             }
         }
 
-        HeapNode[] result = roots.toArray(new HeapNode[roots.size()]);
+        HeapNode[] result = siblings.toArray(new HeapNode[siblings.size()]);
 
         return result;
     }
-
     
    /**
     * public class HeapNode
@@ -381,5 +423,5 @@ public class FibonacciHeap {
         public HeapNode(int key) {
             this.key = key;
         }
-   }
+    }
 }
