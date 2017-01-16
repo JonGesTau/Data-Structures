@@ -14,6 +14,7 @@ public class FibonacciHeapTester {
         heap1.insert(3);
         heap1.insert(4);
         heap1.deleteMin();
+        heap1.deleteMin();
         System.out.println("done");
     }
 }

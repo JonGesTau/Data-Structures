@@ -71,16 +71,14 @@ public class FibonacciHeap {
      	            child.parent = null;
                 }
 
-                HeapNode minPrevious = min.previous;
-     	        HeapNode originallMinChildPrevious = originalMin.child.previous;
-     	        min.previous = originallMinChildPrevious;
-     	        originallMinChildPrevious.next = min;
-     	        originalMin.child.previous = minPrevious;
-     	        minPrevious.next = originalMin.child;
+                children[0].previous = originalMin.previous;
+     	        children[children.length - 1].next = originalMin.next;
+                originalMin.previous.next = children[0];
+                originalMin.next.previous = children[children.length - 1];
+            } else {
+                originalMin.previous.next = originalMin.next;
+                originalMin.next.previous = originalMin.previous;
             }
-
-            originalMin.previous.next = originalMin.next;
-     	    originalMin.next.previous = originalMin.previous;
 
      	    if (originalMin == originalMin.next) {
      	        min = null;
@@ -281,8 +279,10 @@ public class FibonacciHeap {
         } else {
             child.previous = parent.child;
             child.next = parent.child.next;
+            child.next.previous = child;
+            child.previous.next = child;
 
-            parent.child.next = child.next.next = child;
+            parent.child.next = child;
             child.parent = parent;
         }
 
