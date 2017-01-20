@@ -16,19 +16,12 @@ public class FibonacciHeapTester {
 //        heap1.deleteMin();
 //        heap1.deleteMin();
 
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.insert(1);
-        heap1.deleteMin();
-        heap1.deleteMin();
-        heap1.deleteMin();
+        heap1.insert(4);
+        heap1.insert(134);
+        heap1.insert(76);
+        heap1.insert(26);
+        heap1.insert(13);
+        heap1.insert(6);
         heap1.deleteMin();
         System.out.println("done");
     }
