@@ -106,7 +106,17 @@ public class FibonacciHeap {
 
             if (min != null) {
      	        // If our heap is not empty, find the new min and consolidate
-                min = findMin();
+                HeapNode[] roots = getRootsArray();
+                HeapNode newMin = roots[0];
+
+                // Iterate over roots list and get the new minimum
+                for (HeapNode root : roots) {
+                    if (root.key < newMin.key) {
+                        newMin = root;
+                    }
+                }
+
+                min = newMin;
                 consolidate();
                 size--;
             } else {
@@ -125,17 +135,7 @@ public class FibonacciHeap {
     */
     public HeapNode findMin()
     {
-    	HeapNode[] roots = getRootsArray();
-    	HeapNode newMin = roots[0];
-
-    	// Iterate over roots list and get the new minimum
-    	for (HeapNode root : roots) {
-    	    if (root.key < newMin.key) {
-    	        newMin = root;
-            }
-        }
-
-        return newMin;
+        return min;
     }
     
    /**
@@ -195,7 +195,7 @@ public class FibonacciHeap {
     */
     public int[] countersRep()
     {
-        int bucketsSize = (int) (Math.floor(Math.log(size) * (1.0 / Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
+        int bucketsSize = (int) (Math.floor(Math.log(size) / (Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
         int[] arr = new int[bucketsSize];
 	    HeapNode[] roots = getRootsArray();
 
@@ -310,7 +310,7 @@ public class FibonacciHeap {
     /**
      * Clear the heap. Resets all of it's relevant params
      */
-    public void clear() {
+    private void clear() {
         size = 0;
         min = null;
         marked = 0;
@@ -322,7 +322,7 @@ public class FibonacciHeap {
      * @param parent the parent node
      * @param child  the child node
      */
-    public void link(HeapNode parent, HeapNode child) {
+    private void link(HeapNode parent, HeapNode child) {
         // Remove child from it's current position
         child.previous.next = child.next;
         child.next.previous = child.previous;
@@ -357,7 +357,7 @@ public class FibonacciHeap {
      * @param node1 first node
      * @param node2 second node
      */
-    public void cut(HeapNode node1, HeapNode node2) {
+    private void cut(HeapNode node1, HeapNode node2) {
         // Decide who's the parent and who's the child
         HeapNode parent = node1.key < node2.key ? node1 : node2;
         HeapNode child = parent == node1 ? node2 : node1;
@@ -395,7 +395,7 @@ public class FibonacciHeap {
      * Perform a cascading cut
      * @param node the node we want to cascade cut from
      */
-    public void cascadingCut(HeapNode node) {
+    private void cascadingCut(HeapNode node) {
         HeapNode parent = node.parent;
         if (parent != null) {
             // If there's a parent
@@ -413,8 +413,8 @@ public class FibonacciHeap {
     /**
      * Consolidate the heap
      */
-    public void consolidate() {
-        int bucketsSize = (int) (Math.floor(Math.log(size) * (1.0 / Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
+    private void consolidate() {
+        int bucketsSize = (int) (Math.floor(Math.log(size) / (Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
         HeapNode[] buckets = new HeapNode[bucketsSize];
         HeapNode[] roots = getRootsArray();
 
@@ -476,7 +476,7 @@ public class FibonacciHeap {
      * @param node the node we want to mark or unmark
      * @param mark true => mark : false => unmark
      */
-    public void markNode(HeapNode node, boolean mark) {
+    private void markNode(HeapNode node, boolean mark) {
         if (node.isMarked != mark) {
             // Mark or unmark node
             node.isMarked = mark;
@@ -495,7 +495,7 @@ public class FibonacciHeap {
      * Get the roots list
      * @return an array containing all root nodes
      */
-    public HeapNode[] getRootsArray() {
+    private HeapNode[] getRootsArray() {
         // Get the min node's siblings (the other roots)
         return getSiblingsArray(min);
     }
@@ -505,7 +505,7 @@ public class FibonacciHeap {
      * @param node the node we want to get siblings for
      * @return an array containing all sibling nodes
      */
-    public HeapNode[] getSiblingsArray(HeapNode node) {
+    private HeapNode[] getSiblingsArray(HeapNode node) {
         ArrayList<HeapNode> siblings = new ArrayList<>();
         HeapNode firstNode = node;
 
