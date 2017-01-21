@@ -434,8 +434,8 @@ public class FibonacciHeap {
                 // Remove the tree we saved for later
                 buckets[rank] = null;
 
-                // Update the parent's rank
-                parent.rank++;
+                // Next rank
+                rank++;
                 node1 = parent;
             }
 
