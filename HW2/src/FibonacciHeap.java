@@ -8,17 +8,18 @@ import java.util.*;
 public class FibonacciHeap {
     private int size;
     private HeapNode min;
+
     private int marked;
+    private int numRoots;
 
     private static int links;
     private static int cuts;
-
-    public static final int MAX_BUCKETS = 42;
 
     public FibonacciHeap() {
         this.size = 0;
         this.min = null;
         this.marked = 0;
+        this.numRoots = 0;
     }
 
 
@@ -49,6 +50,7 @@ public class FibonacciHeap {
 
         FibonacciHeap heap = new FibonacciHeap();
         heap.size = 1;
+        heap.numRoots = 1;
         heap.min = node;
 
         // Meld the created heap with the destination heap
@@ -106,8 +108,11 @@ public class FibonacciHeap {
      	        // If our heap is not empty, find the new min and consolidate
                 min = findMin();
                 consolidate();
+                size--;
+            } else {
+     	        this.clear();
             }
-            size--;
+
         }
      	
     }
@@ -160,6 +165,12 @@ public class FibonacciHeap {
             // Update size of the heap
             heap1.size += heap2.size;
 
+            // Update num of marked nodes in the heap
+            heap1.marked += heap2.marked;
+
+            // Update num of roots in the heap
+            heap1.numRoots += heap2.numRoots;
+
             // Update minimum of the heap
             heap1.min = heap1.min.key < heap2.min.key ? heap1.min : heap2.min;
         }
@@ -184,7 +195,8 @@ public class FibonacciHeap {
     */
     public int[] countersRep()
     {
-	    int[] arr = new int[MAX_BUCKETS];
+        int bucketsSize = (int) (Math.floor(Math.log(size) * (1.0 / Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
+        int[] arr = new int[bucketsSize];
 	    HeapNode[] roots = getRootsArray();
 
 	    // Iterate over roots list and update the array
@@ -248,7 +260,7 @@ public class FibonacciHeap {
     	HeapNode parent = node.parent;
 
     	if (parent != null && newKey < parent.key) {
-    	    // If the node has a parent and it's new key smaller than it's parent, cut it from it's parent and perform a cascading cut on it's parent
+    	    // If the node has a parent and it's new key is smaller than it's parent, cut it from it's parent and perform a cascading cut on it's parent
     	    cut(parent, node);
     	    cascadingCut(parent);
         }
@@ -268,9 +280,7 @@ public class FibonacciHeap {
     */
     public int potential() 
     {
-        HeapNode[] roots = getRootsArray();
-
-    	return roots.length + 2 * marked;
+    	return numRoots + 2 * marked;
     }
 
    /**
@@ -304,6 +314,7 @@ public class FibonacciHeap {
         size = 0;
         min = null;
         marked = 0;
+        numRoots = 0;
     }
 
     /**
@@ -348,8 +359,8 @@ public class FibonacciHeap {
      */
     public void cut(HeapNode node1, HeapNode node2) {
         // Decide who's the parent and who's the child
-        HeapNode parent = parentAndChild(node1, node2)[0];
-        HeapNode child = parentAndChild(node1, node2)[1];
+        HeapNode parent = node1.key < node2.key ? node1 : node2;
+        HeapNode child = parent == node1 ? node2 : node1;
 
         // Remove child from the children list
         child.previous.next = child.next;
@@ -403,7 +414,8 @@ public class FibonacciHeap {
      * Consolidate the heap
      */
     public void consolidate() {
-        HeapNode[] buckets = new HeapNode[MAX_BUCKETS];
+        int bucketsSize = (int) (Math.floor(Math.log(size) * (1.0 / Math.log((1.0 + Math.sqrt(5.0)) / 2.0))) + 1);
+        HeapNode[] buckets = new HeapNode[bucketsSize];
         HeapNode[] roots = getRootsArray();
 
         // Iterate over roots
@@ -413,8 +425,8 @@ public class FibonacciHeap {
             while (buckets[rank] != null) {
                 // We get here if we saved a tree of the current rank for later
                 HeapNode node2 = buckets[rank];
-                HeapNode parent = parentAndChild(node1, node2)[0];
-                HeapNode child = parentAndChild(node1, node2)[1];
+                HeapNode parent = node1.key < node2.key ? node1 : node2;
+                HeapNode child = parent == node1 ? node2 : node1;
 
                 // Link two trees with the same rank
                 link(parent, child);
@@ -433,10 +445,12 @@ public class FibonacciHeap {
 
         // Find the new min and rebuild roots list after consolidation
         min = null;
+        numRoots = 0;
 
         // Iterate all of the new roots
         for (HeapNode node : buckets) {
               if (node != null) {
+                numRoots++;
                 // If there's a node in this index
                 if (min != null) {
                     // If we've already set some node as the minimum, insert this node to the root list and see if it's the new minimum
@@ -463,42 +477,18 @@ public class FibonacciHeap {
      * @param mark true => mark : false => unmark
      */
     public void markNode(HeapNode node, boolean mark) {
-        // Mark or unmark node
-        node.isMarked = mark;
+        if (node.isMarked != mark) {
+            // Mark or unmark node
+            node.isMarked = mark;
 
-        // Update total marks counter
-        marked = mark ? marked + 1 : marked - 1;
+            // Update total marks counter
+            marked = mark ? marked + 1 : marked - 1;
 
-        // Can't have a negative number of marked nodes
-        if (marked < 0) {
-            marked = 0;
+            // Can't have a negative number of marked nodes
+            if (marked < 0) {
+                marked = 0;
+            }
         }
-    }
-
-    /**
-     * Decide who should be the parent and who should be the child based on the nodes' keys
-     * @param node1 the first node
-     * @param node2 the second node
-     * @return an array where the first element is the parent and the second element is the child
-     */
-    public HeapNode[] parentAndChild(HeapNode node1, HeapNode node2) {
-        HeapNode[] result = new HeapNode[2];
-        HeapNode parent;
-        HeapNode child;
-
-        // Decide who's the parent and who's the child based on the nodes' keys
-        if (node1.key < node2.key) {
-            parent = node1;
-            child = node2;
-        } else {
-            parent = node2;
-            child = node1;
-        }
-
-        result[0] = parent;
-        result[1] = child;
-
-        return result;
     }
 
     /**
@@ -545,7 +535,6 @@ public class FibonacciHeap {
     *  
     */
     public class HeapNode{
-        String info;
         int key;
         int rank;
         boolean isMarked;
