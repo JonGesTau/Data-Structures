@@ -260,7 +260,8 @@ public class FibonacciHeap {
     	HeapNode parent = node.parent;
 
     	if (parent != null && newKey < parent.key) {
-    	    // If the node has a parent and it's new key is smaller than it's parent, cut it from it's parent and perform a cascading cut on it's parent
+    	    // If the node has a parent and it's new key is smaller than it's parent,
+            // cut it from it's parent and perform a cascading cut on it's parent
     	    cut(parent, node);
     	    cascadingCut(parent);
         }
@@ -354,14 +355,10 @@ public class FibonacciHeap {
 
     /**
      * Cut one node from the other
-     * @param node1 first node
-     * @param node2 second node
+     * @param parent first node
+     * @param child second node
      */
-    private void cut(HeapNode node1, HeapNode node2) {
-        // Decide who's the parent and who's the child
-        HeapNode parent = node1.key < node2.key ? node1 : node2;
-        HeapNode child = parent == node1 ? node2 : node1;
-
+    private void cut(HeapNode parent, HeapNode child) {
         // Remove child from the children list
         child.previous.next = child.next;
         child.next.previous = child.previous;
@@ -381,6 +378,9 @@ public class FibonacciHeap {
         child.previous = min.previous;
         child.next = min;
         min.previous = child.previous.next = child;
+
+        // Increment numRoots
+        numRoots++;
 
         child.parent = null;
 
@@ -453,7 +453,8 @@ public class FibonacciHeap {
                 numRoots++;
                 // If there's a node in this index
                 if (min != null) {
-                    // If we've already set some node as the minimum, insert this node to the root list and see if it's the new minimum
+                    // If we've already set some node as the minimum,
+                    // insert this node to the root list and see if it's the new minimum
                     node.previous.next = node.next;
                     node.next.previous = node.previous;
 
