@@ -154,6 +154,8 @@ public class FibonacciHeap {
             // If the current heap is empty, and the other heap isn't, the current heap just becomes the other heap
             heap1.size = heap2.size;
             heap1.min = heap2.min;
+            heap1.marked = heap2.marked;
+            heap1.numRoots = heap2.numRoots;
         } else {
             // If both heaps are not empty, concatenate roots
             heap1.min.next.previous = heap2.min.previous;
