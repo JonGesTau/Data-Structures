@@ -26,7 +26,7 @@ public class FibonacciHeapTester {
 
         // Asymptotic tests
         FibonacciHeap heap1 = new FibonacciHeap();
-        int rounds = 1000;
+        int rounds = 2000;
 
         long startTime = System.nanoTime();
 
@@ -34,10 +34,10 @@ public class FibonacciHeapTester {
             heap1.insert(j);
         }
 
-//        for (int j = rounds; j > 0; j -= 2) {
-//            heap1.deleteMin();
+        for (int j = rounds; j > 0; j -= 2) {
+            heap1.deleteMin();
 //            System.out.println("Total links, round " + j + ": " + heap1.totalLinks());
-//        }
+        }
 
         long endTime = System.nanoTime();
 

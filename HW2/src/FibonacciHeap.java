@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  * FibonacciHeap
@@ -549,5 +549,9 @@ public class FibonacciHeap {
         public HeapNode(int key) {
             this.key = key;
         }
+
+       public int getKey() {
+           return this.key;
+       }
     }
 }
