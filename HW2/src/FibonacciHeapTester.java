@@ -3,6 +3,13 @@
  */
 public class FibonacciHeapTester {
     public static void main(String[] args) {
+        FibonacciHeap heap = new FibonacciHeap();
+        FibonacciHeap.HeapNode node = heap.insert(15);
+        heap.insert(10);
+        heap.insert(5);
+        heap.deleteMin();
+        heap.decreaseKey(node, 10);
+        System.out.println("Total cuts: " + heap.totalCuts());
 //        FibonacciHeap heap2 = new FibonacciHeap();
 
 //        heap1.insert(6);
@@ -25,26 +32,26 @@ public class FibonacciHeapTester {
 //        System.out.println("done");
 
         // Asymptotic tests
-        FibonacciHeap heap1 = new FibonacciHeap();
-        int rounds = 2000;
-
-        long startTime = System.nanoTime();
-
-        for (int j = rounds; j > 0; j--) {
-            heap1.insert(j);
-        }
-
-        for (int j = rounds; j > 0; j -= 2) {
-            heap1.deleteMin();
-//            System.out.println("Total links, round " + j + ": " + heap1.totalLinks());
-        }
-
-        long endTime = System.nanoTime();
-
-        long duration = (endTime - startTime) / 1000000;
-        System.out.println(rounds + " time: " + duration);
-        System.out.println("Total links: " + heap1.totalLinks());
-        System.out.println("Total cuts: " + heap1.totalCuts());
-        System.out.println("Potential: " + heap1.potential());
+//        FibonacciHeap heap1 = new FibonacciHeap();
+//        int rounds = 2000;
+//
+//        long startTime = System.nanoTime();
+//
+//        for (int j = rounds; j > 0; j--) {
+//            heap1.insert(j);
+//        }
+//
+//        for (int j = rounds; j > 0; j -= 2) {
+//            heap1.deleteMin();
+////            System.out.println("Total links, round " + j + ": " + heap1.totalLinks());
+//        }
+//
+//        long endTime = System.nanoTime();
+//
+//        long duration = (endTime - startTime) / 1000000;
+//        System.out.println(rounds + " time: " + duration);
+//        System.out.println("Total links: " + heap1.totalLinks());
+//        System.out.println("Total cuts: " + heap1.totalCuts());
+//        System.out.println("Potential: " + heap1.potential());
     }
 }

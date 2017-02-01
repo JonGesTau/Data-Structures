@@ -333,6 +333,7 @@ public class FibonacciHeap {
         if (parent.child == null) {
             // If the parent has no other children, make child the parent's only child
             parent.child = child;
+            child.parent = parent;
             child.next = child.previous = child;
         } else {
             // Otherwise, insert child in to the parent's children list
